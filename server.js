@@ -1,18 +1,12 @@
-var express = require('express')
-		, http = require('http')
-		, url = require('url')
-		, async = require('async')
-		, request = require('request')
-		, mongoose = require('mongoose')
-		, _ = require('./public/lib/underscore')
-		
-var pkg = require('./package.json')
-		, main = require('./routes/main')
+var express     = require('express')
+	, http      = require('http')
+	, mongoose  = require('mongoose')
+
+var pkg         = require('./package.json')
 
 // set up Mongoose
 mongoose.connect('localhost', pkg.name);
 var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function callback() {
   console.log('Connected to DB');
 });
@@ -34,7 +28,11 @@ app.configure(function() {
 });
 
 // set up routes
-app.get('/', main.index);
+app.get('/', function(req, res) {
+    res.render("index", {
+        project: pkg.name
+    });
+});
 
 // start listening
 app.listen( process.env.PORT , function() {

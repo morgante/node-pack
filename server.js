@@ -1,8 +1,10 @@
-var express     = require('express')
-	, http      = require('http')
-	, mongoose  = require('mongoose')
+var express     = require('express'),
+	http        = require('http'),
+	mongoose    = require('mongoose'),
+	request     = require('request');
 
-var pkg         = require('./package.json')
+var pkg         = require('./package.json'),
+    Sample      = require('./models/sample');
 
 // set up Mongoose
 mongoose.connect('localhost', pkg.name);
@@ -33,6 +35,28 @@ app.get('/', function(req, res) {
         project: pkg.name
     });
 });
+
+app.get('/followers', function(req, res) {
+    var username = req.query.username;
+    
+    Sample.findOne({"username": req.query.username}, function(err, user) {
+        if (user == undefined) {
+            request("https://api.github.com/users/" + username, function(error, response, body) {
+                body = JSON.parse(body);
+                Sample.create({
+                    "username": username,
+                    "followers": body.followers
+                }, function(err, user) {
+                    res.send(user.toJSON());
+                });
+            });
+        } else {
+            res.send(user.toJSON());
+        }
+    });
+
+});
+
 
 // start listening
 app.listen( process.env.PORT , function() {
